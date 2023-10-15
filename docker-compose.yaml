@@ -1,0 +1,66 @@
+version: '3.7'
+name: decoder-db
+
+services:
+  db-authuser:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authuser
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-authuser-volume:/var/lib/postgresql/data
+
+  db-course:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: course
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-course-volume:/var/lib/postgresql/data
+
+  db-notification:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification
+    ports:
+      - "5434:5432"
+    volumes:
+      - db-notification-volume:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    container_name: prometheus-container
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana-oss:9.1.4
+    user: "$UID:$GID"
+    container_name: grafana-container
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-volume:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SERVER_DOMAIN=localhost
+
+volumes:
+  db-authuser-volume: {}
+  db-course-volume: {}
+  db-notification-volume: {}
+  grafana-volume: {}
